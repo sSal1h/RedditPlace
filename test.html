@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .container {
+            position: relative;
+        }
+
+        .container > canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+    <title>Hızlı Reddit Place</title>
+</head>
+<body>
+
+    <div id = "container" class = "container">
+        <canvas id = "canvas_background" width = "1000" height = "1000"></canvas>
+        <canvas id = "canvas_foreground" width = "1000" height = "1000"></canvas>
+    </div>
+
+    <script>
+        const X_PIXELS=20
+        const Y_PIXELS=20
+        const X_OFFSET=100
+        const Y_OFFSET=100
+
+        const X_IN_PLACE=5
+        const Y_IN_PLACE=5
+
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (evt.clientX - rect.left - 20) / (rect.right - rect.left) * canvas.width,
+                y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+            };
+        }
+
+        function drawGrid(x_0, y_0, x_max, y_max, ctx) {
+            for (let x = x_0; x <= x_max; x += X_PIXELS) {
+                ctx.moveTo(x, y_0);
+                ctx.lineTo(x, y_max);
+                for (let y = y_0; y <= y_max; y += Y_PIXELS) {
+                    ctx.moveTo(x_0, y);
+                    ctx.lineTo(x_max, y);
+                }
+            }
+            ctx.strokeStyle = '#bbbbbb';
+            ctx.stroke();
+        }
+
+        const background = document.getElementById("canvas_background");
+        const bg = background.getContext("2d");
+
+        const  foreground = document.getElementById("canvas_foreground");
+        const fg = foreground.getContext("2d");
+
+        const img = new Image();
+        img.onload = function(){
+            w = img.width * X_PIXELS
+            h = img.height * Y_PIXELS
+
+            bg.canvas.width  = w + X_OFFSET;
+            bg.canvas.height = h + 2*Y_OFFSET;
+
+            fg.canvas.width  = bg.canvas.width;
+            fg.canvas.height = bg.canvas.height;
+            bg.imageSmoothingEnabled = false;
+            bg.drawImage(img, 0, 0, img.width, img.height, 0, Y_OFFSET, w, h)
+            drawGrid(0, Y_OFFSET, w, h + Y_OFFSET, bg)
+        };
+        img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RjAzMjZDRDc2QUU0MTFFQTgxRUQ4QTFCNDZDMDdDMDUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RjAzMjZDRDg2QUU0MTFFQTgxRUQ4QTFCNDZDMDdDMDUiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpGMDMyNkNENTZBRTQxMUVBODFFRDhBMUI0NkMwN0MwNSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpGMDMyNkNENjZBRTQxMUVBODFFRDhBMUI0NkMwN0MwNSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PmodDZwAAAaVSURBVHja7Nx/TBNX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'
+          function drawText(text, x, y){
+            fg.font = '80px Sans-serif';
+            fg.strokeStyle = 'black';
+            fg.lineWidth = 8;
+            fg.strokeText(text, x, y);
+            fg.fillStyle = 'white';
+            fg.fillText(text, x, y);
+        }
+
+        foreground.addEventListener('mousemove', event =>
+        {
+            let p = getMousePos(foreground, event);
+            let x = Math.floor((p.x)/X_PIXELS);
+            let y = Math.floor((p.y-Y_OFFSET)/Y_PIXELS) ;
+
+            fg.clearRect(0, 0, fg.canvas.width, fg.canvas.height);
+
+            if (y<0){
+                return;
+            }
+            drawText((x+ X_IN_PLACE)+"", p.x+40, p.y - 30)
+            drawText((y+ Y_IN_PLACE)+"", p.x+40, p.y + 50)
+
+            fg.lineWidth = 4;
+            let circle_x = x*X_PIXELS+X_PIXELS/2;
+            let circle_y = y*Y_PIXELS+Y_OFFSET+Y_PIXELS/2;
+            fg.beginPath()
+            fg.strokeStyle = 'red';
+            fg.arc(circle_x, circle_y, X_PIXELS-6, 0, 2 * Math.PI, false);
+            fg.stroke()
+
+            fg.beginPath()
+            fg.strokeStyle = 'white';
+            fg.arc(circle_x, circle_y, X_PIXELS-4, 0, 2 * Math.PI, false);
+            fg.stroke()
+
+            fg.beginPath()
+            fg.strokeStyle = 'black';
+            fg.arc(circle_x, circle_y, X_PIXELS, 0, 2 * Math.PI, false);
+            fg.stroke()
+
+        });
+
+        foreground.addEventListener('click', event =>
+        {
+            let p = getMousePos(foreground, event);
+            let x = Math.floor((p.x)/X_PIXELS) + X_IN_PLACE;
+            let y = Math.floor((p.y-Y_OFFSET)/Y_PIXELS) + Y_IN_PLACE;
+
+            if (y<Y_IN_PLACE){
+                return;
+            }
+
+            let url ="https://new.reddit.com/r/place/?cx="+x+"&cy="+y+"&px=23"
+            window.open(url, '_blank').focus();
+        });
+
+    </script>
+
+</body>
+</html>
