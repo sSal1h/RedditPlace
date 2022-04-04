@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .container {
+            position: relative;
+        }
+
+        .container > canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+    <title>Muzaffer</title>
+</head>
+<body>
+
+    <div id = "container" class = "container">
+        <canvas id = "canvas_background" width = "1000" height = "1000"></canvas>
+        <canvas id = "canvas_foreground" width = "1000" height = "1000"></canvas>
+    </div>
+
+    <script>
+        const X_PIXELS=20
+        const Y_PIXELS=20
+        const X_OFFSET=100
+        const Y_OFFSET=100
+
+        const X_IN_PLACE=839
+        const Y_IN_PLACE=1881
+
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (evt.clientX - rect.left - 20) / (rect.right - rect.left) * canvas.width,
+                y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+            };
+        }
+
+        function drawGrid(x_0, y_0, x_max, y_max, ctx) {
+            for (let x = x_0; x <= x_max; x += X_PIXELS) {
+                ctx.moveTo(x, y_0);
+                ctx.lineTo(x, y_max);
+                for (let y = y_0; y <= y_max; y += Y_PIXELS) {
+                    ctx.moveTo(x_0, y);
+                    ctx.lineTo(x_max, y);
+                }
+            }
+            ctx.strokeStyle = '#bbbbbb';
+            ctx.stroke();
+        }
+
+        const background = document.getElementById("canvas_background");
+        const bg = background.getContext("2d");
+
+        const  foreground = document.getElementById("canvas_foreground");
+        const fg = foreground.getContext("2d");
+
+        const img = new Image();
+        img.onload = function(){
+            w = img.width * X_PIXELS
+            h = img.height * Y_PIXELS
+
+            bg.canvas.width  = w + X_OFFSET;
+            bg.canvas.height = h + 2*Y_OFFSET;
+
+            fg.canvas.width  = bg.canvas.width;
+            fg.canvas.height = bg.canvas.height;
+            bg.imageSmoothingEnabled = false;
+            bg.drawImage(img, 0, 0, img.width, img.height, 0, Y_OFFSET, w, h)
+            drawGrid(0, Y_OFFSET, w, h + Y_OFFSET, bg)
+        };
+        img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAADCElEQVQokT2TX2xTdRTHP/dPe+/a3l73D1dG20Goy6JiCHMvKkFxJtPFPxiCEqM42OaL+oC+GGMwmOkDD4bExAgGSIRJfFBZtqAhBt0Qh9YxjD6sqJP96Yqba3v7766992faiCc5+Z58v+d7TnKSIw3GDi8AhiKp6CKA7ZT4/I+PscigoODgEsDkqU196GodRSxcUQGwVJDW64oPpyz49Pdj5PmHe95UCEQ0ShkHzfSQm8tz+vD7BGjgyU3P4/VqlJyCoWpKnWVbrjG2eIrQG3OE725k+0MRgvUKdlHgrZOwVis0d8xz49c5Rt49yaO370MzfZbqrsmMLBwn/FaKnte3sc4nUFZsigsC1wVXBr9fontPmOVCG2PqNOfePsEurR8p6rkzu/HQqvHAQDsnH/8JN13hmY+2EtviobJaRq33kvilzPBAHNnw0DfSxXfHf2P2UIMlL4oEbV0NfNY/zdzlHEMvnebyezA5nqKuRWNyPMn3Qw5DA2eYnyxwtv8q0a4mFkkgB/XbSM2k+fvHMueGzzP95yV+GP2ZLw/+RXy8VMPJsatcm51gZHiM5XiZpZk0Qa0BDN3I7j7bLmL3t4itHV0C+C9lsftYZw1vcVU9dl9IVPsNn5mVJVtDCOg92s7U9SvcCiOkEahXCa7X/uemElfoPXoH4CLbXuTelgNcetViZTXFwfgO/I06SApPH7mLzm4fu450gCTjq9dr+nImycQrOR5r3o/0WscH2dnZG8ZF/QQPnzIJtYawU2U2b/Hg8zgUyzIz1yp4WzwsJZN881yG7aV9tEUjlpxz0kSjYR5c289Xz2ZYnE+yrcePT3Eopl10xeXeHoPU/E2+3mOxw+5jYzRK3s0gC+HWiki4lW75ABf25hn9JAGmh2CrDqbK6JnrXNhr8QgvEo5sIOemqfqUzsadQ9VjllmjyWymydrMt+enKEcK2LJG/GKKiZeL7BQvEN7QWltUNYKkSYOxd2pfVR0gSTJ+2eRmZokvVj5kTS6guT6eaBpknREiL7II4VSNANa/nYNISkUPepsAAAAASUVORK5CYII='
+          function drawText(text, x, y){
+            fg.font = '80px Sans-serif';
+            fg.strokeStyle = 'black';
+            fg.lineWidth = 8;
+            fg.strokeText(text, x, y);
+            fg.fillStyle = 'white';
+            fg.fillText(text, x, y);
+        }
+
+        foreground.addEventListener('mousemove', event =>
+        {
+            let p = getMousePos(foreground, event);
+            let x = Math.floor((p.x)/X_PIXELS);
+            let y = Math.floor((p.y-Y_OFFSET)/Y_PIXELS) ;
+
+            fg.clearRect(0, 0, fg.canvas.width, fg.canvas.height);
+
+            if (y<0){
+                return;
+            }
+            drawText((x+ X_IN_PLACE)+"", p.x+40, p.y - 30)
+            drawText((y+ Y_IN_PLACE)+"", p.x+40, p.y + 50)
+
+            fg.lineWidth = 4;
+            let circle_x = x*X_PIXELS+X_PIXELS/2;
+            let circle_y = y*Y_PIXELS+Y_OFFSET+Y_PIXELS/2;
+            fg.beginPath()
+            fg.strokeStyle = 'red';
+            fg.arc(circle_x, circle_y, X_PIXELS-6, 0, 2 * Math.PI, false);
+            fg.stroke()
+
+            fg.beginPath()
+            fg.strokeStyle = 'white';
+            fg.arc(circle_x, circle_y, X_PIXELS-4, 0, 2 * Math.PI, false);
+            fg.stroke()
+
+            fg.beginPath()
+            fg.strokeStyle = 'black';
+            fg.arc(circle_x, circle_y, X_PIXELS, 0, 2 * Math.PI, false);
+            fg.stroke()
+
+        });
+
+        foreground.addEventListener('click', event =>
+        {
+            let p = getMousePos(foreground, event);
+            let x = Math.floor((p.x)/X_PIXELS) + X_IN_PLACE;
+            let y = Math.floor((p.y-Y_OFFSET)/Y_PIXELS) + Y_IN_PLACE;
+
+            if (y<Y_IN_PLACE){
+                return;
+            }
+
+            let url ="https://new.reddit.com/r/place/?cx="+x+"&cy="+y+"&px=23"
+            window.open(url, '_blank').focus();
+        });
+
+    </script>
+
+</body>
+</html>
